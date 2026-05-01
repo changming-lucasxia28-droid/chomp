@@ -1,0 +1,101 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class cheat {
+
+    List<board> boards = new ArrayList<>();
+
+    public void makeAllBoards() {
+        for (int x = 1; x <= 3; x++) {
+            for (int y = 0; y <= x; y++) {
+                for (int z = 0; z <= y; z++) {
+                    board newBoard = new board(x, y, z);
+                    boards.add(newBoard);
+                }
+            }
+        }
+    }
+
+
+    public List<int[]> movers(int x, int y, int z) {
+        List<int[]> moves = new ArrayList<int[]>();
+
+        //System.out.println("BOARD GIVEN IS: " + x + ", " + y + ", " + z);
+
+        for (int c = 0; c < z; c++) {
+            moves.add(new int[]{x, y, c});
+        }
+
+        for (int b = 0; b < y; b++) {
+            moves.add(new int[]{x, b, Math.min(z, b)});
+        }
+
+        for (int a = x - 1; a >= 1; a--) {
+            moves.add(new int[]{a, Math.min(y, a), Math.min(z, a)});
+        }
+
+        for (int[] move : moves) {
+            //System.out.println("POSSIBLE MOVE (the board it will give the opponent): " + move[0] + "," + move[1] + "," + move[2]);
+        }
+
+        return moves;
+    }
+
+    //win or lose
+    public boolean[][][] calc() {
+        boolean[][][] winOrLose = new boolean[4][4][4];
+        winOrLose[1][0][0] = false;
+
+        for (int x = 1; x <= 3; x++) {
+            for (int y = 0; y <= x; y++) {
+                for (int z = 0; z <= y; z++) {
+                    if (x==1 && y==0 && z==0) continue; //because [1][0][0] has already been set to false
+
+                    List<int[]> moves = movers(x, y, z);
+                    boolean wL = false;
+
+                    for (int[] move : moves) {
+                        if (winOrLose[move[0]][move[1]][move[2]] == false) {
+                            wL = true;
+                            break;
+                        }
+                    }
+
+                    winOrLose[x][y][z] = wL;
+                    //System.out.println(x + "," + y + "," + z + " = " + (wL ? "W" : "L"));
+
+                }
+            }
+        }
+        return winOrLose;
+    }
+
+    //bestMove
+    public int[] bestMove(int x, int y, int z, boolean[][][] winLose) {
+        List<int[]> moves = movers(x, y, z);
+
+        for  (int[] move : moves) { //loop through all the possible combinations given the list from movers
+            if (winLose[move[0]][move[1]][move[2]] == false) { //so if its false that means the opponent gets a losing
+                // board, therefore you win. vice versa.
+                return move;
+            }
+        }
+        return null;
+    }
+
+    // because I was trouble with all the different things and having to constantly call a billion different values to just
+    // print out the initial board + the best move
+    public void answerForAThreeByThree(int startingX, int startingY, int startingZ) {
+        System.out.println("The Starting Board is: " + startingX + " " + startingY + " " + startingZ);
+        boolean[][][] result = calc();
+        int bestMove[] = bestMove(startingX, startingY, startingZ, result);
+        System.out.println("Best Move is: " + bestMove[0] + " " + bestMove[1] + " " + bestMove[2]);
+    }
+
+    public static void main(String[] args) {
+        cheat chomp = new cheat();
+        chomp.makeAllBoards();
+        chomp.answerForAThreeByThree(3, 3, 3); //so put your starting board in here for a 3x3
+
+    }
+}
